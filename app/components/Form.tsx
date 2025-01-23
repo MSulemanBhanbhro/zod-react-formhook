@@ -20,7 +20,7 @@ function Form() {
     register,
     handleSubmit,
     formState: { errors },
-    setError,
+    
   } = useForm<FormData>({
     resolver: zodResolver(UserSchema), // Apply the zodResolver
   });
