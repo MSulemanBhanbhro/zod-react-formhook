@@ -1,8 +1,19 @@
 import { useForm } from "react-hook-form";
+import { FormData } from "@/types";
 import FormField from "./FormField";
-import { FormData, UserSchema, ValidFieldNames } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
+import { z } from "zod";
+
+const UserSchema = z.object({
+  email: z.string().email(),
+  githubUrl: z.string().url(),
+  yearsOfExperience: z.number().min(1).max(10),
+  password: z.string().min(6),
+  confirmPassword: z.string().min(6),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
 function Form() {
   const {
@@ -15,89 +26,60 @@ function Form() {
   });
 
   const onSubmit = async (data: FormData) => {
-    try {
-      const response = await axios.post("/api/form", data); // Make a POST request
-      const { errors = {} } = response.data; // Destructure the 'errors' property from the response data
-
-      // Define a mapping between server-side field names and their corresponding client-side names
-      const fieldErrorMapping: Record<string, ValidFieldNames> = {
-        email: "email",
-        githubUrl: "githubUrl",
-        yearsOfExperience: "yearsOfExperience",
-        password: "password",
-        confirmPassword: "confirmPassword",
-      };
-
-      // Find the first field with an error in the response data
-      const fieldWithError = Object.keys(fieldErrorMapping).find(
-        (field) => errors[field]
-      );
-
-      // If a field with an error is found, update the form error state using setError
-      if (fieldWithError) {
-        // Use the ValidFieldNames type to ensure the correct field names
-        setError(fieldErrorMapping[fieldWithError], {
-          type: "server",
-          message: errors[fieldWithError],
-        });
-      }
-    } catch (error) {
-      alert("Submitting form failed!");
-    }
-  };
+      console.log("SUCCESS", data);
+  }
 
   return (
-    <div className="bg-gray-400  p-8 rounded-lg flex flex-col items-center mt-10 ">
-        <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="grid col-auto">
-        <h1 className="text-3xl font-bold mb-4">React-Hook-Form & Zod</h1>
-        <FormField
-          type="email"
-          placeholder="Email"
-          name="email"
-          register={register}
-          error={errors.email}
-        />
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid col-auto bg-gray-200 p-4 rounded-lg">
+          <h1 className="text-3xl font-bold mb-4">
+            Zod & React-Hook-Form
+          </h1>
+          <FormField
+            type="email"
+            placeholder="Email"
+            name="email"
+            register={register}
+            error={errors.email}
+          />
 
-        <FormField
-          type="text"
-          placeholder="GitHub URL"
-          name="githubUrl"
-          register={register}
-          error={errors.githubUrl}
-        />
+          <FormField
+            type="text"
+            placeholder="GitHub URL"
+            name="githubUrl"
+            register={register}
+            error={errors.githubUrl}
+          />
 
-        <FormField
-          type="number"
-          placeholder="Years of Experience (1 - 10)"
-          name="yearsOfExperience"
-          register={register}
-          error={errors.yearsOfExperience}
-          valueAsNumber
-        />
+          <FormField
+            type="number"
+            placeholder="Years of Experience (1 - 10)"
+            name="yearsOfExperience"
+            register={register}
+            error={errors.yearsOfExperience}
+            valueAsNumber
+          />
 
-        <FormField
-          type="password"
-          placeholder="Password"
-          name="password"
-          register={register}
-          error={errors.password}
-        />
+          <FormField
+            type="password"
+            placeholder="Password"
+            name="password"
+            register={register}
+            error={errors.password}
+          />
 
-        <FormField
-          type="password"
-          placeholder="Confirm Password"
-          name="confirmPassword"
-          register={register}
-          error={errors.confirmPassword}
-        />
-        <button type="submit" className="submit-button bg-blue-700 text-white px-4 py-2 rounded-md mt-4">
-          Submit
-        </button>
-      </div>
-    </form>
-    </div>
-    
+          <FormField
+            type="password"
+            placeholder="Confirm Password"
+            name="confirmPassword"
+            register={register}
+            error={errors.confirmPassword}
+          />
+          <button type="submit" className="submit-button">
+            Submit
+          </button>
+        </div>
+      </form>
   );
 }
 
